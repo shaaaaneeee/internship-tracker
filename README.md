@@ -3,20 +3,23 @@
 A web app I built to track my own internship and job applications. Tired of using spreadsheets so I made this instead.
 
 ## What it does
-- Create an account and log in
-- Add, edit, and delete applications
+- Create an account and log in securely
+- Add, edit, and delete job applications
 - Track status — applied, interview, rejected, offer
-- Add notes to each application
-- Stats overview at the top of the dashboard
-- Dark and light mode
+- Search and filter by company, role, or status
+- Stats overview with a breakdown chart
+- Dark and light mode that persists across sessions
 - Only you can see your own data
 
 ## Tech
 - React + Vite (frontend)
 - Python + FastAPI (backend)
 - PostgreSQL via Supabase (database)
-- JWT for auth
+- JWT authentication
 - Deployed on Vercel + Render
+
+## Live Demo
+https://internship-tracker-shane.vercel.app
 
 ## Running locally
 
@@ -24,8 +27,8 @@ A web app I built to track my own internship and job applications. Tired of usin
 ```bash
 py -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt
 cd backend
+pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
@@ -42,22 +45,7 @@ npm install
 npm run dev
 ```
 
-## Project structure
+Create a `.env` file inside the `frontend` folder:
 ```
-internship-tracker/
-├── backend/
-│   ├── routers/
-│   ├── main.py
-│   ├── database.py
-│   ├── models.py
-│   ├── schemas.py
-│   └── requirements.txt
-├── frontend/
-│   └── src/
-│       ├── api/
-│       ├── components/
-│       ├── context/
-│       └── pages/
-├── .gitignore
-└── README.md
+VITE_API_URL=http://127.0.0.1:8000
 ```
