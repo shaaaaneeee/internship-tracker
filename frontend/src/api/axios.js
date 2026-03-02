@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://internship-tracker-api-fqn6.onrender.com',
+  baseURL: 'https://internship-tracker-api-fqn6.onrender.com/',
 })
 
 api.interceptors.request.use((config) => {
