@@ -2,6 +2,8 @@
 
 A web app I built to track my own internship and job applications. Tired of using spreadsheets so I made this instead.
 
+![Demo](Demo.gif)
+
 ## What it does
 - Create an account and log in securely
 - Add, edit, and delete job applications

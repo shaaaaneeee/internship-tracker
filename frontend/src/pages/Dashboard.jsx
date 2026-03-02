@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 import StatsChart from '../components/StatsChart'
 
 function timeAgo(dateString) {
-  const date = new Date(dateString)
+  const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z')
   const now = new Date()
   const diff = Math.floor((now - date) / 1000)
   if (diff < 60) return 'just now'
@@ -17,7 +17,6 @@ function timeAgo(dateString) {
   if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`
   return `${Math.floor(diff / 2592000)}mo ago`
 }
-
 const statusConfig = {
   applied: { label: 'Applied', dot: 'bg-blue-500' },
   interview: { label: 'Interview', dot: 'bg-yellow-500' },
