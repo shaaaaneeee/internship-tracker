@@ -1,43 +1,10 @@
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 
 const COLORS = {
   applied: '#3b82f6',
   interview: '#eab308',
   offer: '#22c55e',
   rejected: '#ef4444',
-}
-
-const RADIAN = Math.PI / 180
-
-function renderCustomShape(props) {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props
-  const gapAngle = 2
-  const adjustedStart = startAngle + gapAngle / 2
-  const adjustedEnd = endAngle - gapAngle / 2
-
-  const x1 = cx + outerRadius * Math.cos(-adjustedStart * RADIAN)
-  const y1 = cy + outerRadius * Math.sin(-adjustedStart * RADIAN)
-  const x2 = cx + outerRadius * Math.cos(-adjustedEnd * RADIAN)
-  const y2 = cy + outerRadius * Math.sin(-adjustedEnd * RADIAN)
-  const x3 = cx + innerRadius * Math.cos(-adjustedEnd * RADIAN)
-  const y3 = cy + innerRadius * Math.sin(-adjustedEnd * RADIAN)
-  const x4 = cx + innerRadius * Math.cos(-adjustedStart * RADIAN)
-  const y4 = cy + innerRadius * Math.sin(-adjustedStart * RADIAN)
-
-  const largeArc = adjustedEnd - adjustedStart > 180 ? 1 : 0
-
-  return (
-    <path
-      d={`
-        M ${x1} ${y1}
-        A ${outerRadius} ${outerRadius} 0 ${largeArc} 0 ${x2} ${y2}
-        L ${x3} ${y3}
-        A ${innerRadius} ${innerRadius} 0 ${largeArc} 1 ${x4} ${y4}
-        Z
-      `}
-      fill={fill}
-    />
-  )
 }
 
 function StatsChart({ applications, darkMode }) {
@@ -64,15 +31,23 @@ function StatsChart({ applications, darkMode }) {
                 cy="50%"
                 innerRadius={35}
                 outerRadius={55}
+                paddingAngle={3}
                 dataKey="value"
-                stroke="none"
-                customizedShape={renderCustomShape}
-                shape={renderCustomShape}
-              >
+                stroke={darkMode ? '#09090b' : '#ffffff'}
+                strokeWidth={2}
+            >
                 {data.map((entry) => (
                   <Cell key={entry.key} fill={COLORS[entry.key]} />
                 ))}
               </Pie>
+              <Tooltip
+                contentStyle={{
+                  background: 'transparent',
+                  border: 'none',
+                  boxShadow: 'none',
+                  fontSize: '12px',
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

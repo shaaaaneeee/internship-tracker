@@ -1,28 +1,19 @@
-import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Sun, Moon, LogOut } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 function Navbar({ darkMode, toggleDarkMode }) {
   const { logout, user } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = async () => {
-    try {
-      await logout()
-      navigate('/login')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
   }
 
-  const username = user?.email
-    ? user.email.split('@')[0]
-    : null
-
-  const formattedName = username
-    ? username.charAt(0).toUpperCase() + username.slice(1)
-    : null
+  const username = user?.email ? user.email.split('@')[0] : null
+  const formattedName = username ? username.charAt(0).toUpperCase() + username.slice(1) : null
 
   return (
     <motion.nav
@@ -32,7 +23,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
       className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-8 py-4"
     >
       <div className="flex items-center justify-between">
-        {/* Left Section */}
         <div className="flex flex-col">
           <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
             Internship Tracker
@@ -43,20 +33,16 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </span>
           )}
         </div>
-
-        {/* Right Section */}
         <div className="flex items-center gap-3">
           <button
             onClick={toggleDarkMode}
-            aria-label="Toggle dark mode"
-            className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition"
           >
             <LogOut size={15} />
             Logout

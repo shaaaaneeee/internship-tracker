@@ -7,7 +7,7 @@ import api from '../api/axios'
 const rules = [
   { label: 'At least 8 characters', test: (p) => p.length >= 8 },
   { label: 'One uppercase letter', test: (p) => /[A-Z]/.test(p) },
-  { label: 'One number', test: (p) => /[0-9]/.test(p) },
+  { label: 'One number', test: (p) => /[0-9]/.test(p) }
 ]
 
 function Signup() {
@@ -49,9 +49,7 @@ function Signup() {
         <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white mb-1">Create account</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">Start tracking your applications</p>
 
-        {error && (
-          <p className="text-sm text-red-500 mb-5">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-500 mb-5">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -76,7 +74,6 @@ function Signup() {
               placeholder="••••••••"
               required
             />
-            <br />
             {showRules && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}

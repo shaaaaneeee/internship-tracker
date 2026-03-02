@@ -36,6 +36,7 @@ function Dashboard() {
   const [deletingId, setDeletingId] = useState(null)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [showingDeleteToast, setShowingDeleteToast] = useState(false)
 
   useEffect(() => { fetchApplications() }, [])
 
@@ -83,13 +84,15 @@ function Dashboard() {
   }
 
   const handleDelete = async (id) => {
-    if (deletingId) return
+    if (showingDeleteToast) return
+    setShowingDeleteToast(true)
     toast((t) => (
       <div className="flex items-center gap-3">
         <span className="text-sm">Delete this application?</span>
         <button
           onClick={async () => {
             toast.dismiss(t.id)
+            setShowingDeleteToast(false)
             setDeletingId(id)
             try {
               await api.delete(`/applications/${id}`)
@@ -106,13 +109,19 @@ function Dashboard() {
           Delete
         </button>
         <button
-          onClick={() => toast.dismiss(t.id)}
+          onClick={() => {
+            toast.dismiss(t.id)
+            setShowingDeleteToast(false)
+          }}
           className="px-2 py-1 text-xs bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded hover:opacity-80 transition"
         >
           Cancel
         </button>
       </div>
-    ), { duration: 5000 })
+    ), { 
+      duration: 5000,
+      onClose: () => setShowingDeleteToast(false)
+    })
   }
 
   const openEdit = (app) => {
