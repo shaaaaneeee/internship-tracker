@@ -20,8 +20,6 @@ class ApplicationCreate(BaseModel):
     role: str
     status: str = "applied"
     notes: Optional[str] = None
-    interview_date: Optional[datetime] = None
-    outcome_date: Optional[datetime] = None
 
 class ApplicationResponse(BaseModel):
     id: int
@@ -31,8 +29,6 @@ class ApplicationResponse(BaseModel):
     notes: Optional[str]
     date_applied: datetime
     user_id: int
-    interview_date: Optional[datetime] = None
-    outcome_date: Optional[datetime] = None
 
     class Config:
         from_attributes = True
