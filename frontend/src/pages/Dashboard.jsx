@@ -3,6 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Briefcase, Pencil, Trash2 } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import api from '../api/axios'
+import toast from 'react-hot-toast'
+import StatsChart from '../components/StatsChart'
+
+function timeAgo(dateString) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diff = Math.floor((now - date) / 1000)
+  if (diff < 60) return 'just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
+  if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`
+  return `${Math.floor(diff / 2592000)}mo ago`
+}
 
 const statusConfig = {
   applied: { label: 'Applied', dot: 'bg-blue-500' },
@@ -18,6 +32,10 @@ function Dashboard() {
   const [editingApp, setEditingApp] = useState(null)
   const [form, setForm] = useState({ company: '', role: '', status: 'applied', notes: '' })
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const [search, setSearch] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
 
   useEffect(() => { fetchApplications() }, [])
 
@@ -44,26 +62,57 @@ function Dashboard() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (submitting) return
+    setSubmitting(true)
     try {
       if (editingApp) {
         await api.put(`/applications/${editingApp.id}`, form)
+        toast.success('Application updated')
       } else {
         await api.post('/applications/', form)
+        toast.success('Application added')
       }
       fetchApplications()
       closeModal()
     } catch (err) {
+      toast.error('Something went wrong')
       console.error(err)
+    } finally {
+      setSubmitting(false)
     }
   }
 
   const handleDelete = async (id) => {
-    try {
-      await api.delete(`/applications/${id}`)
-      setApplications(applications.filter(app => app.id !== id))
-    } catch (err) {
-      console.error(err)
-    }
+    if (deletingId) return
+    toast((t) => (
+      <div className="flex items-center gap-3">
+        <span className="text-sm">Delete this application?</span>
+        <button
+          onClick={async () => {
+            toast.dismiss(t.id)
+            setDeletingId(id)
+            try {
+              await api.delete(`/applications/${id}`)
+              setApplications(prev => prev.filter(app => app.id !== id))
+              toast.success('Application deleted')
+            } catch (err) {
+              toast.error('Something went wrong')
+            } finally {
+              setDeletingId(null)
+            }
+          }}
+          className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition"
+        >
+          Delete
+        </button>
+        <button
+          onClick={() => toast.dismiss(t.id)}
+          className="px-2 py-1 text-xs bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded hover:opacity-80 transition"
+        >
+          Cancel
+        </button>
+      </div>
+    ), { duration: 5000 })
   }
 
   const openEdit = (app) => {
@@ -76,6 +125,7 @@ function Dashboard() {
     setShowModal(false)
     setEditingApp(null)
     setForm({ company: '', role: '', status: 'applied', notes: '' })
+    setSubmitting(false)
   }
 
   const stats = [
@@ -84,6 +134,28 @@ function Dashboard() {
     { label: 'Offers', value: applications.filter(a => a.status === 'offer').length },
     { label: 'Rejected', value: applications.filter(a => a.status === 'rejected').length },
   ]
+
+  const filtered = applications.filter(app => {
+    const matchesSearch = app.company.toLowerCase().includes(search.toLowerCase()) ||
+      app.role.toLowerCase().includes(search.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || app.status === filterStatus
+    return matchesSearch && matchesStatus
+  })
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-3"
+        >
+          <div className="w-5 h-5 border-2 border-zinc-300 dark:border-zinc-600 border-t-zinc-900 dark:border-t-white rounded-full animate-spin" />
+          <p className="text-xs text-zinc-400">Loading...</p>
+        </motion.div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors duration-200">
@@ -106,37 +178,61 @@ function Dashboard() {
           ))}
         </div>
 
+        <StatsChart applications={applications} darkMode={darkMode} />
+
         <div className="border-t border-zinc-100 dark:border-zinc-800 mb-8" />
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-medium text-zinc-900 dark:text-white">Applications</h2>
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm rounded-md hover:opacity-90 transition"
+            disabled={showModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm rounded-md hover:opacity-90 transition disabled:opacity-50"
           >
             <Plus size={14} />
             Add
           </motion.button>
         </div>
 
+        {/* Search and Filter */}
+        <div className="flex items-center gap-3 mb-6">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search company or role..."
+            className="flex-1 px-3 py-2 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+          />
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-2 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+          >
+            <option value="all">All</option>
+            <option value="applied">Applied</option>
+            <option value="interview">Interview</option>
+            <option value="rejected">Rejected</option>
+            <option value="offer">Offer</option>
+          </select>
+        </div>
+
         {/* List */}
-        {loading ? (
-          <p className="text-sm text-zinc-400 py-12 text-center">Loading...</p>
-        ) : applications.length === 0 ? (
+        {filtered.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
             <Briefcase size={32} className="mx-auto mb-3 text-zinc-300 dark:text-zinc-700" />
-            <p className="text-sm text-zinc-400">No applications yet</p>
+            <p className="text-sm text-zinc-400">
+              {applications.length === 0 ? 'No applications yet' : 'No results found'}
+            </p>
           </motion.div>
         ) : (
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
             <AnimatePresence>
-              {applications.map((app) => (
+              {filtered.map((app) => (
                 <motion.div
                   key={app.id}
                   initial={{ opacity: 0 }}
@@ -146,7 +242,9 @@ function Dashboard() {
                 >
                   <div>
                     <p className="text-sm font-medium text-zinc-900 dark:text-white">{app.company}</p>
-                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{app.role}</p>
+                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      {app.role} · {timeAgo(app.date_applied)}
+                    </p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5">
@@ -162,7 +260,8 @@ function Dashboard() {
                       </button>
                       <button
                         onClick={() => handleDelete(app.id)}
-                        className="p-1.5 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition"
+                        disabled={deletingId === app.id}
+                        className="p-1.5 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition disabled:opacity-50"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -249,9 +348,10 @@ function Dashboard() {
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     type="submit"
-                    className="flex-1 py-2 text-sm bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-md hover:opacity-90 transition"
+                    disabled={submitting}
+                    className="flex-1 py-2 text-sm bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-md hover:opacity-90 transition disabled:opacity-50"
                   >
-                    {editingApp ? 'Save' : 'Add'}
+                    {submitting ? 'Saving...' : editingApp ? 'Save' : 'Add'}
                   </motion.button>
                 </div>
               </form>
