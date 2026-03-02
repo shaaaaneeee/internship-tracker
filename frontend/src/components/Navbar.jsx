@@ -14,7 +14,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
 
   return (
     <div className="border-b border-zinc-200 dark:border-zinc-800 px-8 py-4 flex items-center justify-between bg-white dark:bg-zinc-950">
-      <span className="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">InternTrack</span>
+      <span className="text-sm font-semibold text-zinc-900 dark:text-white tracking-tight">Internship Tracker app by Shane Lee</span>
       <div className="flex items-center gap-3">
         <button
           onClick={toggleDarkMode}
