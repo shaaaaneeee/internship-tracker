@@ -17,6 +17,7 @@ function timeAgo(dateString) {
   if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`
   return `${Math.floor(diff / 2592000)}mo ago`
 }
+
 const statusConfig = {
   applied: { label: 'Applied', dot: 'bg-blue-500' },
   interview: { label: 'Interview', dot: 'bg-yellow-500' },
@@ -33,9 +34,10 @@ function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+  const [showingDeleteToast, setShowingDeleteToast] = useState(false)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
-  const [showingDeleteToast, setShowingDeleteToast] = useState(false)
+  const [sortBy, setSortBy] = useState('newest')
 
   useEffect(() => { fetchApplications() }, [])
 
@@ -117,7 +119,7 @@ function Dashboard() {
           Cancel
         </button>
       </div>
-    ), { 
+    ), {
       duration: 5000,
       onClose: () => setShowingDeleteToast(false)
     })
@@ -143,12 +145,20 @@ function Dashboard() {
     { label: 'Rejected', value: applications.filter(a => a.status === 'rejected').length },
   ]
 
-  const filtered = applications.filter(app => {
-    const matchesSearch = app.company.toLowerCase().includes(search.toLowerCase()) ||
-      app.role.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = filterStatus === 'all' || app.status === filterStatus
-    return matchesSearch && matchesStatus
-  })
+  const filtered = applications
+    .filter(app => {
+      const matchesSearch = app.company.toLowerCase().includes(search.toLowerCase()) ||
+        app.role.toLowerCase().includes(search.toLowerCase())
+      const matchesStatus = filterStatus === 'all' || app.status === filterStatus
+      return matchesSearch && matchesStatus
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.date_applied) - new Date(a.date_applied)
+      if (sortBy === 'oldest') return new Date(a.date_applied) - new Date(b.date_applied)
+      if (sortBy === 'company') return a.company.localeCompare(b.company)
+      if (sortBy === 'status') return a.status.localeCompare(b.status)
+      return 0
+    })
 
   if (loading) {
     return (
@@ -169,10 +179,10 @@ function Dashboard() {
     <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors duration-200">
       <Navbar darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} />
 
-      <div className="max-w-4xl mx-auto px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-8 py-12">
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-12">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -204,8 +214,8 @@ function Dashboard() {
           </motion.button>
         </div>
 
-        {/* Search and Filter */}
-        <div className="flex items-center gap-3 mb-6">
+        {/* Search, Filter and Sort */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -215,13 +225,23 @@ function Dashboard() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+            className="w-full sm:w-auto px-3 py-2 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
           >
             <option value="all">All</option>
             <option value="applied">Applied</option>
             <option value="interview">Interview</option>
             <option value="rejected">Rejected</option>
             <option value="offer">Offer</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="w-full sm:w-auto px-3 py-2 text-sm rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-zinc-400 transition"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="company">Company A-Z</option>
+            <option value="status">Status</option>
           </select>
         </div>
 
@@ -372,5 +392,3 @@ function Dashboard() {
 }
 
 export default Dashboard
-
-// This file defines the Dashboard component, which is the main page of the application where users can view, add, edit, and delete their internship applications. It also includes a dark mode toggle and displays some basic statistics about the applications.
