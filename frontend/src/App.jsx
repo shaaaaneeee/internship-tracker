@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Landing from './pages/Landing'
+import Account from './pages/Account'
 
 function App() {
   useEffect(() => {
@@ -27,6 +28,11 @@ function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/account" element={
+            <ProtectedRoute>
+              <Account />
             </ProtectedRoute>
           } />
         </Routes>

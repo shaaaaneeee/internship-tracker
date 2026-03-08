@@ -1,7 +1,7 @@
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
-import { Sun, Moon, LogOut } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { Sun, Moon, LogOut, Settings } from 'lucide-react'
 
 function Navbar({ darkMode, toggleDarkMode }) {
   const { logout, user } = useAuth()
@@ -40,6 +40,12 @@ function Navbar({ darkMode, toggleDarkMode }) {
           >
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
+          <Link
+            to="/account"
+            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+          >
+            <Settings size={16} />
+          </Link>
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition"
